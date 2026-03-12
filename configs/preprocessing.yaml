@@ -1,0 +1,32 @@
+seed: 42
+
+input:
+  raw_path: data/raw/Combined Data.csv
+  text_col: statement
+  label_col: status
+  # Optional TweetEval transfer source (set to null to skip)
+  tweeteval_path: null
+
+output:
+  processed_dir: data/processed
+  artifacts_dir: data/artifacts
+
+cleaning:
+  min_text_length: 3        # characters after cleaning; shorter rows dropped
+  preserve_hashtag_text: true
+  lowercase: true
+
+split:
+  train: 0.70
+  val: 0.15
+  test: 0.15
+  strategy: stratified      # stratified | random
+
+label_map:
+  normal: 0
+  depression: 1
+  anxiety: 2
+  bipolar: 3
+  ptsd: 4
+  stress: 5
+  suicidal: 6

@@ -1,60 +1,62 @@
 ---
 phase: design
-title: System Design & Architecture
-description: Define the technical architecture, components, and data models
+title: Design — Feature: Dataset Preprocessing (M2)
+description: Architecture and data flow for the preprocessing pipeline
+status: done
 ---
 
-# System Design & Architecture
+# Design — Dataset Preprocessing (M2)
 
 ## Architecture Overview
-**What is the high-level system structure?**
 
-- Include a mermaid diagram that captures the main components and their relationships. Example:
-  ```mermaid
-  graph TD
-    Client -->|HTTPS| API
-    API --> ServiceA
-    API --> ServiceB
-    ServiceA --> Database[(DB)]
-  ```
-- Key components and their responsibilities
-- Technology stack choices and rationale
+```mermaid
+graph TD
+    RAW["data/raw/kaggle_mental_health.csv"] --> LOAD["Load CSV (pandas)"]
+    LOAD --> CLEAN["clean_text() — pure function"]
+    CLEAN --> VALIDATE["normalise_label() + drop invalids"]
+    VALIDATE --> DEDUP["Deduplicate (text, label_id)"]
+    DEDUP --> SPLIT["Stratified split 70/15/15 seed=42"]
+    SPLIT --> TRAIN["data/processed/train.csv"]
+    SPLIT --> VAL["data/processed/val.csv"]
+    SPLIT --> TEST["data/processed/test.csv"]
+    DEDUP --> REPORT["data/artifacts/preprocessing_report.json"]
+```
 
 ## Data Models
-**What data do we need to manage?**
 
-- Core entities and their relationships
-- Data schemas/structures
-- Data flow between components
+### Raw input
+| Column | Type | Example |
+|---|---|---|
+| `text` | str | `"I can't sleep, everything feels hopeless"` |
+| `label` | str | `"depression"` |
 
-## API Design
-**How do components communicate?**
-
-- External APIs (if applicable)
-- Internal interfaces
-- Request/response formats
-- Authentication/authorization approach
+### Processed output
+| Column | Type | Example |
+|---|---|---|
+| `text` | str | `"i can't sleep everything feels hopeless"` |
+| `label` | str | `"depression"` |
+| `label_id` | int | `1` |
 
 ## Component Breakdown
-**What are the major building blocks?**
 
-- Frontend components (if applicable)
-- Backend services/modules
-- Database/storage layer
-- Third-party integrations
+| Module | Responsibility |
+|---|---|
+| `src/data/preprocess.py` | `clean_text()`, `normalise_label()`, `preprocess_dataframe()`, `validate_processed_csv()` |
+| `src/data/dataset.py` | `Vocabulary`, `SentimentDataset`, `build_vocab_and_loaders()`, `compute_class_weights()` |
+| `scripts/preprocess.py` | CLI entry-point: load config → run pipeline → save splits + report |
+| `configs/preprocessing.yaml` | All configurable parameters (paths, split ratios, label map, seed) |
 
 ## Design Decisions
-**Why did we choose this approach?**
 
-- Key architectural decisions and trade-offs
-- Alternatives considered
-- Patterns and principles applied
+1. **Pure functions for cleaning** — no side effects, fully deterministic and testable.
+2. **Label map in config** — easy to extend without touching source code.
+3. **Stratified split** — preserves class distribution across all three splits.
+4. **Deduplication by (text, label_id)** — prevents data leakage from repeated posts.
+5. **Quality report JSON** — provides audit trail for reviewers and CI validation.
 
 ## Non-Functional Requirements
-**How should the system perform?**
 
-- Performance targets
-- Scalability considerations
-- Security requirements
-- Reliability/availability needs
+- Deterministic: same raw CSV always produces identical split files.
+- Fast: full pipeline runs in < 5 minutes on local CPU (baseline dataset).
+- Observable: all dropped rows are counted and categorised in the quality report.
 

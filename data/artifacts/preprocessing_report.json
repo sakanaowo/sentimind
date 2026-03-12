@@ -1,0 +1,53 @@
+{
+  "initial_count": 53043,
+  "dropped": {
+    "null_rows": 362,
+    "short_text": 6,
+    "unknown_labels": 1077,
+    "duplicates": 1447
+  },
+  "unknown_label_values": {
+    "Personality disorder": 1077
+  },
+  "final_count": 50151,
+  "total_dropped": 2892,
+  "class_distribution": {
+    "0": {
+      "label": "Normal",
+      "count": 16007
+    },
+    "1": {
+      "label": "Depression",
+      "count": 15093
+    },
+    "2": {
+      "label": "Anxiety",
+      "count": 3620
+    },
+    "3": {
+      "label": "Bipolar",
+      "count": 2501
+    },
+    "5": {
+      "label": "Stress",
+      "count": 2292
+    },
+    "6": {
+      "label": "Suicidal",
+      "count": 10638
+    }
+  },
+  "class_counts": {
+    "0": 16007,
+    "1": 15093,
+    "2": 3620,
+    "3": 2501,
+    "5": 2292,
+    "6": 10638
+  },
+  "splits": {
+    "train": 35105,
+    "val": 7523,
+    "test": 7523
+  }
+}

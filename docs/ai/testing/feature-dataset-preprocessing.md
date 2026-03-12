@@ -1,13 +1,79 @@
 ---
 phase: testing
-title: Testing Strategy
-description: Define testing approach, test cases, and quality assurance
+title: Testing — Feature: Dataset Preprocessing (M2)
+description: Test coverage and smoke-check commands for the preprocessing pipeline
+status: done
 ---
 
-# Testing Strategy
+# Testing — Dataset Preprocessing (M2)
 
-## Test Coverage Goals
-**What level of testing do we aim for?**
+## Running Tests
+
+```bash
+# All preprocessing tests
+pytest tests/test_preprocessing.py -v
+
+# With coverage
+pytest tests/test_preprocessing.py -v --cov=src/data --cov-report=term-missing
+```
+
+## Test Coverage
+
+### `clean_text()` (unit)
+- [x] URL removal
+- [x] @mention removal
+- [x] Hashtag word preservation (`#anxious` → `anxious`)
+- [x] Lowercase conversion
+- [x] HTML entity removal
+- [x] Whitespace collapse
+- [x] Non-string input (None, int) → empty string
+
+### `normalise_label()` (unit)
+- [x] Exact match (lowercase)
+- [x] Case-insensitive match
+- [x] Whitespace-trimming
+- [x] Unknown label returns `None`
+
+### `preprocess_dataframe()` (integration)
+- [x] Output columns are `{text, label, label_id}`
+- [x] Null rows are dropped and counted
+- [x] Short-text rows are dropped and counted
+- [x] Unknown labels are dropped and logged
+- [x] Duplicate rows are deduplicated
+- [x] `label_id` dtype is integer
+- [x] `label_id` values are within the defined label map
+- [x] No null values in output
+- [x] Custom column names are accepted
+- [x] Missing required column raises `ValueError`
+- [x] **Determinism**: two runs on same input produce identical output
+
+### `validate_processed_csv()` (schema check)
+- [x] Valid file passes
+- [x] Missing column fails
+- [x] Non-existent file fails
+
+## Smoke Test (End-to-End)
+
+```bash
+# Create a tiny sample CSV and run the full script
+python -c "
+import pandas as pd
+pd.DataFrame({
+    'text': ['i feel very depressed today']*50 + ['anxiety keeps me up']*50 + ['normal day overall']*50,
+    'label': ['depression']*50 + ['anxiety']*50 + ['normal']*50
+}).to_csv('/tmp/sample.csv', index=False)
+"
+python scripts/preprocess.py --raw_path /tmp/sample.csv
+# Expected: 3 split CSVs + preprocessing_report.json created
+```
+
+## Definition of Done (DoD)
+
+- [x] All unit tests pass: `pytest tests/test_preprocessing.py -v`
+- [x] Smoke test runs without error on 150-row sample
+- [x] `preprocessing_report.json` is generated and contains `total_dropped`, `class_counts`, `splits`
+- [x] Re-running produces identical split checksums
+
 
 - Unit test coverage target (default: 100% of new/changed code)
 - Integration test scope (critical paths + error handling)

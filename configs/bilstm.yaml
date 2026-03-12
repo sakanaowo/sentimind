@@ -1,0 +1,37 @@
+seed: 42
+
+data:
+  train_path: data/processed/train.csv
+  val_path: data/processed/val.csv
+  test_path: data/processed/test.csv
+  vocab_path: data/artifacts/vocab.json
+  text_col: text
+  label_col: label_id
+  max_seq_len: 128
+  vocab_min_freq: 2
+
+model:
+  embedding_dim: 300
+  hidden_dim: 256
+  num_layers: 2
+  dropout: 0.3
+  bidirectional: true
+  # Set to path of .txt GloVe file to use pretrained embeddings, or null for random init
+  pretrained_embeddings: null   # e.g. "data/raw/glove.twitter.27B.300d.txt"
+  freeze_embeddings: false      # only relevant when pretrained_embeddings is set
+
+training:
+  batch_size: 64
+  epochs: 30
+  learning_rate: 0.001
+  weight_decay: 1.0e-4
+  class_weighted_loss: true
+  early_stopping_patience: 5
+  early_stopping_metric: macro_f1   # macro_f1 | val_loss
+  gradient_clip: 5.0
+
+output:
+  artifacts_dir: data/artifacts
+  checkpoint_name: bilstm_best.pt
+  metrics_name: bilstm_metrics.json
+  confusion_matrix_name: bilstm_confusion_matrix.png

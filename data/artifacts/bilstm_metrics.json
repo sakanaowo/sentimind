@@ -1,0 +1,95 @@
+{
+  "model": "bilstm",
+  "split": "test",
+  "accuracy": 0.7716,
+  "macro_f1": 0.7374,
+  "weighted_f1": 0.7719,
+  "per_class": {
+    "Normal": {
+      "precision": 0.9206,
+      "recall": 0.9271,
+      "f1": 0.9238,
+      "support": 2401
+    },
+    "Depression": {
+      "precision": 0.747,
+      "recall": 0.6692,
+      "f1": 0.706,
+      "support": 2264
+    },
+    "Anxiety": {
+      "precision": 0.7843,
+      "recall": 0.7901,
+      "f1": 0.7872,
+      "support": 543
+    },
+    "Bipolar": {
+      "precision": 0.776,
+      "recall": 0.7573,
+      "f1": 0.7665,
+      "support": 375
+    },
+    "Stress": {
+      "precision": 0.5534,
+      "recall": 0.5727,
+      "f1": 0.5629,
+      "support": 344
+    },
+    "Suicidal": {
+      "precision": 0.6383,
+      "recall": 0.7231,
+      "f1": 0.678,
+      "support": 1596
+    }
+  },
+  "confusion_matrix": [
+    [
+      2226,
+      52,
+      25,
+      8,
+      68,
+      22
+    ],
+    [
+      60,
+      1515,
+      23,
+      25,
+      34,
+      607
+    ],
+    [
+      32,
+      26,
+      429,
+      23,
+      26,
+      7
+    ],
+    [
+      10,
+      27,
+      23,
+      284,
+      26,
+      5
+    ],
+    [
+      30,
+      48,
+      40,
+      16,
+      197,
+      13
+    ],
+    [
+      60,
+      360,
+      7,
+      10,
+      5,
+      1154
+    ]
+  ]
+}

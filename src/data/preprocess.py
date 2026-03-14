@@ -23,12 +23,15 @@ DEFAULT_LABEL_MAP: Dict[str, int] = {
     "depression": 1,
     "anxiety": 2,
     "bipolar": 3,
+    "personality disorder": 4,
     "ptsd": 4,
     "stress": 5,
     "suicidal": 6,
 }
 
-ID_TO_LABEL: Dict[int, str] = {v: k.capitalize() for k, v in DEFAULT_LABEL_MAP.items()}
+ID_TO_LABEL: Dict[int, str] = {}
+for label_name, label_id in DEFAULT_LABEL_MAP.items():
+    ID_TO_LABEL.setdefault(label_id, label_name.title())
 
 
 # ---------------------------------------------------------------------------

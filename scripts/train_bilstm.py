@@ -85,11 +85,13 @@ def main() -> None:
     )
 
     num_classes = len(set(cfg.get("label_map", {}).values()) or range(7))
-    # Infer from label_map or default to 7
+    # Infer from label_map or default to 7.
+    # Count unique ids (not number of keys) so aliases like 'ptsd' and
+    # 'personality disorder' can map to the same class safely.
     try:
         with open("configs/preprocessing.yaml") as f:
             pre_cfg = yaml.safe_load(f)
-        num_classes = len(pre_cfg["label_map"])
+        num_classes = len(set(pre_cfg["label_map"].values()))
     except Exception:
         num_classes = 7
 

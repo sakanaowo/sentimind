@@ -1,0 +1,54 @@
+seed: 42
+
+data:
+  test_path: data/processed/test.csv
+  text_col: text
+  label_col: label_id
+  # Limit embedding generation to this many samples (null = full test set).
+  # Reduce during development to save compute.
+  sample_size: null
+  sample_seed: 42
+
+embeddings:
+  # Any sentence-transformers compatible checkpoint.
+  model_name: all-MiniLM-L6-v2
+  batch_size: 64
+  device: null # null = auto detect; set to "cpu" or "cuda" to override
+  # Cache raw embeddings to avoid recomputing on each run.
+  cache_path: data/artifacts/semantic_embeddings.npy
+
+sts:
+  # Number of random sentence pairs to score per class.
+  pairs_per_class: 50
+  # Seed for reproducible pair sampling.
+  seed: 42
+
+clustering:
+  # UMAP dimensionality reduction
+  umap:
+    n_components: 2
+    n_neighbors: 15
+    min_dist: 0.1
+    metric: cosine
+    random_state: 42
+
+  # HDBSCAN clustering
+  hdbscan:
+    min_cluster_size: 30
+    min_samples: 5
+    metric: euclidean
+    cluster_selection_method: eom
+
+# Cross-model comparison: list metrics files from all models.
+# Paths can be set to null to skip a model in the comparison.
+comparison:
+  bilstm_metrics: data/artifacts/bilstm_metrics.json
+  bertweet_metrics: data/artifacts/bertweet_metrics.json # null if not yet generated
+  llm_metrics: data/artifacts/llm_metrics.json # null if not yet generated
+
+output:
+  artifacts_dir: data/artifacts
+  sts_report_name: sts_report.json
+  cluster_plot_name: semantic_cluster_plot.png
+  comparison_report_name: comparison_report.json
+  embeddings_2d_name: semantic_embeddings_2d.npy

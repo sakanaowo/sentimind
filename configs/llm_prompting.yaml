@@ -1,0 +1,51 @@
+provider: openai # openai | openai-compatible
+# model: gpt-4o-mini      # Uncomment and set your target model.
+# base_url: null          # Override for OpenAI-compatible endpoints (e.g. local Ollama)
+# api_key_env: OPENAI_API_KEY  # name of the environment variable holding the API key
+
+# Sampling parameters
+generation:
+  model: gpt-4o-mini
+  temperature: 0.0 # 0 = deterministic
+  max_tokens: 128
+  request_timeout: 30 # seconds per request
+  max_retries: 3 # retries on transient errors or parse failures
+
+# Prompting strategy
+prompting:
+  mode: zero_shot # zero_shot | few_shot
+  num_few_shot_examples: 3 # used only when mode=few_shot
+  few_shot_selection: random # random | hard_case (hard_case: highest bilstm confusion)
+
+# Evaluation dataset
+data:
+  test_path: data/processed/test.csv
+  # Cap the number of samples to limit cost during development.
+  # Set to null to evaluate the full test split.
+  sample_size: 200
+  sample_seed: 42
+  text_col: text
+  label_col: label_id
+
+# Data contract: label names the LLM must use exactly (case-insensitive fallback applied)
+label_map:
+  0: Normal
+  1: Depression
+  2: Anxiety
+  3: Bipolar
+  4: Personality disorder
+  5: Stress
+  6: Suicidal
+
+# Cost tracking (prices in USD per 1 000 tokens; update as pricing changes)
+cost:
+  input_price_per_1k: 0.00015 # gpt-4o-mini input
+  output_price_per_1k: 0.00060 # gpt-4o-mini output
+  budget_cap_usd: 5.0 # abort run if cumulative cost exceeds this
+
+output:
+  artifacts_dir: data/artifacts
+  predictions_name: llm_predictions.jsonl
+  metrics_name: llm_metrics.json
+  cost_report_name: llm_cost_report.json
+  confusion_matrix_name: llm_confusion_matrix.png

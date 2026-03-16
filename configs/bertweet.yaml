@@ -26,7 +26,7 @@ training:
   early_stopping_patience: 3
   early_stopping_metric: macro_f1 # macro_f1 | val_loss
   gradient_clip: 1.0
-  fp16: false # set true if GPU supports half-precision
+  fp16: true # set true if GPU supports half-precision
 
 output:
   artifacts_dir: data/artifacts

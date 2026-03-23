@@ -46,7 +46,7 @@ Files: `data/processed/{train,val,test}.csv`
 | 1          | Depression |                             |
 | 2          | Anxiety    |                             |
 | 3          | Bipolar    |                             |
-| 4          | PTSD       |                             |
+| 4          | Personality disorder | `PTSD` accepted as alias in preprocessing |
 | 5          | Stress     |                             |
 | 6          | Suicidal   | May be merged with Depression per analysis |
 

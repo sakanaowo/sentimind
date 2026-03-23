@@ -159,7 +159,7 @@ Answer:
        └─────────┬──────────┘
                  ↓
 ┌─────────────────────────────────────────┐
-│         EVALUATION & SO SÁNH           │
+│         EVALUATION & SO SÁNH            │
 │  - Accuracy, F1-score, Precision/Recall │
 │  - Semantic similarity score            │
 │  - Confusion matrix                     │

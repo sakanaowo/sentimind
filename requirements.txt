@@ -21,6 +21,13 @@ pyyaml>=6.0
 tqdm>=4.65.0
 jsonlines>=3.1.0
 
+# LLM prompting (M5) — Google Gemini
+google-genai>=1.0.0
+
+# Semantic analysis (M6)
+umap-learn>=0.5.3
+hdbscan>=0.8.33
+
 # Testing
 pytest>=7.4.0
 pytest-cov>=4.1.0

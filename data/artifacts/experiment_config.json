@@ -1,0 +1,61 @@
+{
+  "project": "Sentimind — Mental Health Sentiment Analysis",
+  "dataset": "Kaggle Mental Health + TweetEval (reference)",
+  "num_classes": 7,
+  "labels": [
+    "Normal",
+    "Depression",
+    "Anxiety",
+    "Bipolar",
+    "Personality Disorder",
+    "Stress",
+    "Suicidal"
+  ],
+  "dataset_size": {
+    "raw": 53043,
+    "after_cleaning": 51045,
+    "train": 35731,
+    "val": 7657,
+    "test": 7657
+  },
+  "random_seed": 42,
+  "models": {
+    "bilstm": {
+      "type": "RNN",
+      "embedding_dim": 300,
+      "hidden_dim": 256,
+      "num_layers": 2,
+      "epochs_trained": 6,
+      "test_accuracy": 0.7583,
+      "test_macro_f1": 0.6936
+    },
+    "bertweet": {
+      "type": "Transformer",
+      "pretrained": "vinai/bertweet-base",
+      "epochs_trained": 8,
+      "test_accuracy": 0.8155,
+      "test_macro_f1": 0.7831
+    },
+    "gemini": {
+      "type": "LLM (zero-shot)",
+      "model": "gemini-2.5-flash",
+      "temperature": 0.0,
+      "sample_size": 200,
+      "test_accuracy": 0.66,
+      "test_macro_f1": 0.6175,
+      "api_cost_usd": 0.009019
+    }
+  },
+  "semantic": {
+    "embedding_model": "all-MiniLM-L6-v2",
+    "embedding_dim": 384,
+    "umap": {
+      "n_neighbors": 30,
+      "min_dist": 0.05
+    },
+    "hdbscan": {
+      "min_cluster_size": 120,
+      "min_samples": 10
+    }
+  }
+}

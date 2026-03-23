@@ -1,0 +1,36 @@
+seed: 42
+
+data:
+  train_path: data/processed/train.csv
+  val_path: data/processed/val.csv
+  test_path: data/processed/test.csv
+  text_col: text
+  label_col: label_id
+  max_seq_len: 128
+
+model:
+  # HuggingFace checkpoint — swap to "cardiffnlp/twitter-roberta-base" if preferred
+  pretrained_name: vinai/bertweet-base
+  num_classes: 7 # matches preprocessing label_map; class 4 may have 0 support
+  dropout: 0.1
+  freeze_base: false # set true to train classification head only
+
+training:
+  batch_size: 16
+  gradient_accumulation_steps: 2 # effective batch = 32
+  epochs: 10
+  learning_rate: 2.0e-5
+  weight_decay: 1.0e-2
+  warmup_ratio: 0.06 # fraction of total steps used for linear warmup
+  class_weighted_loss: true
+  early_stopping_patience: 3
+  early_stopping_metric: macro_f1 # macro_f1 | val_loss
+  gradient_clip: 1.0
+  fp16: true # set true if GPU supports half-precision
+
+output:
+  artifacts_dir: data/artifacts
+  checkpoint_name: bertweet_best.pt
+  metrics_name: bertweet_metrics.json
+  confusion_matrix_name: bertweet_confusion_matrix.png
+  history_name: bertweet_train_history.json

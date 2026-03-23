@@ -98,8 +98,10 @@ def main() -> None:
         with open("configs/preprocessing.yaml") as f:
             pre_cfg = yaml.safe_load(f)
         label_map = pre_cfg["label_map"]
-        num_classes = len(label_map)
-        id_to_label = {v: k.capitalize() for k, v in label_map.items()}
+        num_classes = len(set(label_map.values()))
+        id_to_label = {}
+        for label_name, label_id in label_map.items():
+            id_to_label.setdefault(label_id, label_name.title())
     except Exception:
         num_classes = 7
         id_to_label = None

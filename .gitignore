@@ -19,6 +19,7 @@ data/raw/
 data/processed/
 data/artifacts/*.pt
 data/artifacts/*.ckpt
+data/artifacts/*.npy
 
 # Keep artifact schema examples
 !data/artifacts/.gitkeep

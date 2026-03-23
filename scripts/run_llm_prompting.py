@@ -2,8 +2,10 @@
 """
 Entry-point script: LLM zero-shot / few-shot classification of mental-health posts.
 
+Uses Google Gemini API (gemini-2.5-flash by default, configurable to gemini-2.5-pro).
+
 Usage:
-    export OPENAI_API_KEY=sk-...
+    export GOOGLE_API_KEY=<your-google-api-key>
     python scripts/run_llm_prompting.py
     python scripts/run_llm_prompting.py --config configs/llm_prompting.yaml --mode few_shot
     python scripts/run_llm_prompting.py --sample 50   # quick dev run on 50 samples
@@ -122,14 +124,13 @@ def main() -> None:
 
     client = LLMClient(
         model=gen_cfg["model"],
-        api_key_env=cfg.get("api_key_env", "OPENAI_API_KEY"),
-        base_url=cfg.get("base_url"),
+        api_key_env=cfg.get("api_key_env", "GOOGLE_API_KEY"),
         temperature=gen_cfg.get("temperature", 0.0),
-        max_tokens=gen_cfg.get("max_tokens", 128),
-        request_timeout=gen_cfg.get("request_timeout", 30),
+        max_tokens=gen_cfg.get("max_tokens", 256),
+        request_timeout=gen_cfg.get("request_timeout", 60),
         max_retries=gen_cfg.get("max_retries", 3),
-        input_price_per_1k=cost_cfg.get("input_price_per_1k", 0.00015),
-        output_price_per_1k=cost_cfg.get("output_price_per_1k", 0.00060),
+        input_price_per_1k=cost_cfg.get("input_price_per_1k", 0.000075),
+        output_price_per_1k=cost_cfg.get("output_price_per_1k", 0.000300),
         budget_cap_usd=cost_cfg.get("budget_cap_usd", 5.0),
     )
 

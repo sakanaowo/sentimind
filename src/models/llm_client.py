@@ -1,14 +1,14 @@
 """
 LLM client for zero-shot / few-shot mental-health label classification.
 
-Supports any OpenAI-compatible chat API (OpenAI, Azure OpenAI, local Ollama, etc.).
-Structured output: each response must contain a JSON block with keys
-  ``label``, ``confidence``, and ``explanation``.
+Uses Google Gemini API (google-genai SDK). Supports gemini-2.5-flash and
+gemini-2.5-pro. Structured output: each response must contain a JSON block
+with keys ``label``, ``confidence``, and ``explanation``.
 
 Security note:
   - The API key is read from an environment variable (never hard-coded).
-  - User-supplied text is inserted into the *user* turn only, not the system prompt,
-    so prompt-injection into the system instruction is not possible.
+  - User-supplied text is inserted into the *user* turn only, not the system
+    instruction, so prompt-injection into the system prompt is not possible.
   - The budget cap prevents runaway API costs.
 """
 
@@ -223,17 +223,20 @@ def _normalise_label(raw_label: str, label_map: Dict[int, str]) -> Tuple[str, in
 
 
 class LLMClient:
-    """Thin wrapper around the OpenAI chat completion API.
+    """Wrapper around the Google Gemini API (google-genai SDK).
 
-    Supports any OpenAI-compatible endpoint by setting ``base_url``.
+    Supports ``gemini-2.5-flash`` (default, fast & cheap) and
+    ``gemini-2.5-pro`` (higher quality). The interface is intentionally
+    kept identical to the previous OpenAI-based version so that
+    ``run_llm_prompting.py`` and all downstream code work unchanged.
 
     Args:
-        model: model name, e.g. ``"gpt-4o-mini"``.
-        api_key_env: name of the environment variable holding the API key.
-        base_url: override base URL (e.g. ``"http://localhost:11434/v1"`` for Ollama).
+        model: Gemini model name, e.g. ``"gemini-2.5-flash"``.
+        api_key_env: name of the environment variable holding the Google API key.
+        base_url: unused; kept for interface compatibility.
         temperature: sampling temperature (0 for deterministic output).
-        max_tokens: maximum completion tokens.
-        request_timeout: HTTP timeout in seconds.
+        max_tokens: maximum output tokens per request.
+        request_timeout: HTTP timeout in seconds (applied at client level).
         max_retries: number of retries on transient errors or parse failures.
         input_price_per_1k: cost per 1 000 input tokens in USD.
         output_price_per_1k: cost per 1 000 output tokens in USD.
@@ -242,24 +245,24 @@ class LLMClient:
 
     def __init__(
         self,
-        model: str = "gpt-4o-mini",
-        api_key_env: str = "OPENAI_API_KEY",
-        base_url: Optional[str] = None,
+        model: str = "gemini-2.5-flash",
+        api_key_env: str = "GOOGLE_API_KEY",
+        base_url: Optional[str] = None,  # kept for interface compat, not used
         temperature: float = 0.0,
-        max_tokens: int = 128,
+        max_tokens: int = 256,
         request_timeout: int = 30,
         max_retries: int = 3,
-        input_price_per_1k: float = 0.00015,
-        output_price_per_1k: float = 0.00060,
+        input_price_per_1k: float = 0.000075,  # gemini-2.5-flash input pricing
+        output_price_per_1k: float = 0.000300,  # gemini-2.5-flash output pricing
         budget_cap_usd: float = 5.0,
     ):
-        # Import lazily to avoid hard dependency if the module is not used
         try:
-            from openai import OpenAI
+            from google import genai
+            from google.genai import types as gentypes
         except ImportError as exc:
             raise ImportError(
-                "The 'openai' package is required for LLM prompting. "
-                "Install it with: pip install openai>=1.0.0"
+                "The 'google-genai' package is required for LLM prompting. "
+                "Install it with: pip install google-genai>=1.0.0"
             ) from exc
 
         api_key = os.environ.get(api_key_env)
@@ -268,7 +271,11 @@ class LLMClient:
                 f"API key not found. Set the '{api_key_env}' environment variable."
             )
 
-        self.client = OpenAI(api_key=api_key, base_url=base_url)
+        self._client = genai.Client(
+            api_key=api_key,
+            http_options=gentypes.HttpOptions(timeout=request_timeout * 1000),
+        )
+        self._gentypes = gentypes
         self.model = model
         self.temperature = temperature
         self.max_tokens = max_tokens
@@ -281,6 +288,27 @@ class LLMClient:
             budget_cap_usd=budget_cap_usd,
         )
 
+    def _messages_to_gemini(self, messages: List[dict]):
+        """Convert OpenAI-style message list to Gemini system_instruction + contents."""
+        types = self._gentypes
+        system_instruction: Optional[str] = None
+        contents = []
+        for msg in messages:
+            role = msg["role"]
+            content = msg["content"]
+            if role == "system":
+                system_instruction = content
+            elif role == "user":
+                contents.append(
+                    types.Content(role="user", parts=[types.Part(text=content)])
+                )
+            elif role == "assistant":
+                # Gemini uses "model" as the assistant role
+                contents.append(
+                    types.Content(role="model", parts=[types.Part(text=content)])
+                )
+        return system_instruction, contents
+
     def classify(
         self,
         text: str,
@@ -288,7 +316,7 @@ class LLMClient:
         mode: str = "zero_shot",
         few_shot_examples: Optional[List[Dict[str, str]]] = None,
     ) -> LLMPrediction:
-        """Classify a single text using the configured LLM.
+        """Classify a single text using Gemini.
 
         Args:
             text: the social-media post to classify.
@@ -306,6 +334,7 @@ class LLMClient:
             )
 
         label_names = list(label_map.values())
+        types = self._gentypes
 
         for attempt in range(1, self.max_retries + 1):
             if mode == "few_shot" and few_shot_examples:
@@ -315,14 +344,22 @@ class LLMClient:
             else:
                 messages = _build_zero_shot_messages(text, label_names)
 
+            system_instruction, contents = self._messages_to_gemini(messages)
+
             t0 = time.perf_counter()
             try:
-                response = self.client.chat.completions.create(
+                response = self._client.models.generate_content(
                     model=self.model,
-                    messages=messages,
-                    temperature=self.temperature,
-                    max_tokens=self.max_tokens,
-                    timeout=self.request_timeout,
+                    contents=contents,
+                    config=types.GenerateContentConfig(
+                        system_instruction=system_instruction,
+                        temperature=self.temperature,
+                        max_output_tokens=self.max_tokens,
+                        # Disable thinking for classification (thinking tokens
+                        # eat into max_output_tokens on gemini-2.5-flash,
+                        # leaving too little budget for the JSON response).
+                        thinking_config=types.ThinkingConfig(thinking_budget=0),
+                    ),
                 )
             except Exception as exc:
                 logger.warning(
@@ -346,9 +383,13 @@ class LLMClient:
                 continue
 
             latency = time.perf_counter() - t0
-            raw = response.choices[0].message.content or ""
-            prompt_tokens = response.usage.prompt_tokens
-            completion_tokens = response.usage.completion_tokens
+            raw = response.text or ""
+            prompt_tokens = (
+                getattr(response.usage_metadata, "prompt_token_count", 0) or 0
+            )
+            completion_tokens = (
+                getattr(response.usage_metadata, "candidates_token_count", 0) or 0
+            )
             self.cost.update(prompt_tokens, completion_tokens)
 
             parsed = _extract_json(raw)

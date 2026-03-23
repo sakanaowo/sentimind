@@ -1,14 +1,13 @@
-provider: openai # openai | openai-compatible
-# model: gpt-4o-mini      # Uncomment and set your target model.
-# base_url: null          # Override for OpenAI-compatible endpoints (e.g. local Ollama)
-# api_key_env: OPENAI_API_KEY  # name of the environment variable holding the API key
+provider: google # google (Gemini)
+# Supported models: gemini-2.5-flash (default, fast & cheap), gemini-2.5-pro (higher quality)
+# api_key_env: GOOGLE_API_KEY  # name of the environment variable holding the Google API key
 
 # Sampling parameters
 generation:
-  model: gpt-4o-mini
+  model: gemini-2.5-flash
   temperature: 0.0 # 0 = deterministic
-  max_tokens: 128
-  request_timeout: 30 # seconds per request
+  max_tokens: 1024  # must be large enough to accommodate thinking tokens on gemini-2.5-flash
+  request_timeout: 60 # seconds per request (Gemini can be slower on first call)
   max_retries: 3 # retries on transient errors or parse failures
 
 # Prompting strategy
@@ -38,9 +37,11 @@ label_map:
   6: Suicidal
 
 # Cost tracking (prices in USD per 1 000 tokens; update as pricing changes)
+# gemini-2.5-flash: $0.075/1M input, $0.30/1M output
+# gemini-2.5-pro:   $1.25/1M input, $10.0/1M output
 cost:
-  input_price_per_1k: 0.00015 # gpt-4o-mini input
-  output_price_per_1k: 0.00060 # gpt-4o-mini output
+  input_price_per_1k: 0.000075  # gemini-2.5-flash input
+  output_price_per_1k: 0.000300 # gemini-2.5-flash output
   budget_cap_usd: 5.0 # abort run if cumulative cost exceeds this
 
 output:

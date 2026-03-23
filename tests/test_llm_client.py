@@ -186,47 +186,42 @@ class TestCostAccumulator:
 # ---------------------------------------------------------------------------
 
 
-def _make_mock_openai_response(label: str, confidence: float = 0.9) -> MagicMock:
-    """Construct a minimal mock openai.ChatCompletion response."""
-    choice = MagicMock()
-    choice.message.content = json.dumps(
+def _make_mock_gemini_response(label: str, confidence: float = 0.9) -> MagicMock:
+    """Construct a minimal mock Gemini generate_content response."""
+    resp = MagicMock()
+    resp.text = json.dumps(
         {
             "label": label,
             "confidence": confidence,
             "explanation": "mock explanation",
         }
     )
-
-    usage = MagicMock()
-    usage.prompt_tokens = 50
-    usage.completion_tokens = 30
-
-    resp = MagicMock()
-    resp.choices = [choice]
-    resp.usage = usage
+    resp.usage_metadata.prompt_token_count = 50
+    resp.usage_metadata.candidates_token_count = 30
     return resp
 
 
 @pytest.fixture
 def mock_client(monkeypatch):
-    """LLMClient with OpenAI constructor mocked and API key in environment."""
-    monkeypatch.setenv("OPENAI_API_KEY", "sk-test-key")
+    """LLMClient with Gemini constructor mocked and API key in environment."""
+    monkeypatch.setenv("GOOGLE_API_KEY", "test-google-key")
 
     with patch("src.models.llm_client.LLMClient.__init__") as mock_init:
         mock_init.return_value = None
         client = LLMClient.__new__(LLMClient)
 
-    # Set up client attributes directly
-    mock_openai = MagicMock()
-    client.client = mock_openai
-    client.model = "gpt-4o-mini"
+    # Set up client attributes directly (mirrors __init__ assignments)
+    mock_gemini_client = MagicMock()
+    client._client = mock_gemini_client
+    client._gentypes = MagicMock()
+    client.model = "gemini-2.5-flash"
     client.temperature = 0.0
-    client.max_tokens = 128
-    client.request_timeout = 30
+    client.max_tokens = 256
+    client.request_timeout = 60
     client.max_retries = 3
-    client.cost = CostAccumulator(0.00015, 0.00060, budget_cap_usd=5.0)
+    client.cost = CostAccumulator(0.000075, 0.000300, budget_cap_usd=5.0)
 
-    mock_openai.chat.completions.create.return_value = _make_mock_openai_response(
+    mock_gemini_client.models.generate_content.return_value = _make_mock_gemini_response(
         "Anxiety"
     )
     return client
@@ -250,9 +245,9 @@ class TestLLMClient:
 
     def test_classify_parse_failure_sets_flag(self, mock_client):
         # Return garbled JSON
-        mock_client.client.chat.completions.create.return_value.choices[
-            0
-        ].message.content = "I think it is something."
+        mock_client._client.models.generate_content.return_value.text = (
+            "I think it is something."
+        )
         mock_client.max_retries = 1
         pred = mock_client.classify("some text", LABEL_MAP)
         assert pred.parse_error is True
@@ -274,4 +269,4 @@ class TestLLMClient:
         )
         assert isinstance(pred, LLMPrediction)
         # API should have received a call regardless of mode
-        mock_client.client.chat.completions.create.assert_called()
+        mock_client._client.models.generate_content.assert_called()

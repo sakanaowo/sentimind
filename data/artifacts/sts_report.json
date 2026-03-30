@@ -1,13 +1,13 @@
 {
   "within_class_avg_cosine": {
-    "Normal": 0.0917,
-    "Depression": 0.3304,
-    "Anxiety": 0.2394,
-    "Bipolar": 0.2891,
-    "Personality Disorder": 0.203,
-    "Stress": 0.1905,
-    "Suicidal": 0.2564
+    "Normal": 0.0832,
+    "Depression": 0.2836,
+    "Anxiety": 0.2209,
+    "Bipolar": 0.238,
+    "Personality Disorder": 0.1818,
+    "Stress": 0.1553,
+    "Suicidal": 0.2958
   },
-  "cross_class_avg_cosine": 0.1513,
+  "cross_class_avg_cosine": 0.1405,
   "interpretation": "Higher within-class scores indicate semantically cohesive groups. A larger within/cross-class gap suggests cleaner semantic boundaries."
 }

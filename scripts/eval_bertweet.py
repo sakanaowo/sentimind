@@ -156,15 +156,15 @@ def main() -> None:
     save_metrics(metrics, metrics_path)
 
     cm_path = artifacts_dir / out_cfg["confusion_matrix_name"]
-    label_names = [
-        ID_TO_LABEL.get(i, str(i)) for i in sorted(set(y_true) | set(y_pred))
-    ]
+    labels_present = sorted(set(y_true) | set(y_pred))
+    cm_label_names = {
+        i: ID_TO_LABEL.get(lbl, str(lbl)) for i, lbl in enumerate(labels_present)
+    }
     save_confusion_matrix_plot(
-        y_true,
-        y_pred,
-        label_names=label_names,
+        conf_matrix=metrics["confusion_matrix"],
+        label_names=cm_label_names,
+        path=cm_path,
         title="BERTweet — Test Confusion Matrix",
-        save_path=cm_path,
     )
 
     logger.info("All artifacts written to %s.", artifacts_dir)

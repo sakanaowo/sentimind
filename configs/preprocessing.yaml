@@ -28,6 +28,5 @@ label_map:
   anxiety: 2
   bipolar: 3
   personality disorder: 4
-  ptsd: 4
   stress: 5
   suicidal: 6

@@ -11,13 +11,13 @@ data:
   vocab_min_freq: 2
 
 model:
-  embedding_dim: 300
+  embedding_dim: 200
   hidden_dim: 256
   num_layers: 2
   dropout: 0.3
   bidirectional: true
   # Set to path of .txt GloVe file to use pretrained embeddings, or null for random init
-  pretrained_embeddings: null   # e.g. "data/raw/glove.twitter.27B.300d.txt"
+  pretrained_embeddings: "data/raw/glove.twitter.27B.200d.txt"
   freeze_embeddings: false      # only relevant when pretrained_embeddings is set
 
 training:

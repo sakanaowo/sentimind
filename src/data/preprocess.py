@@ -24,7 +24,6 @@ DEFAULT_LABEL_MAP: Dict[str, int] = {
     "anxiety": 2,
     "bipolar": 3,
     "personality disorder": 4,
-    "ptsd": 4,
     "stress": 5,
     "suicidal": 6,
 }
@@ -145,6 +144,16 @@ def preprocess_dataframe(
     report["dropped"]["short_text"] = int(short_count)
     logger.info("Dropped %d rows with text shorter than %d chars after cleaning.",
                 short_count, min_text_length)
+
+    # --- Drop extremely long text ---
+    max_words = 1000 # Ngưỡng cắt rác/spam
+    long_mask = df["text"].str.split().str.len() > max_words
+    long_count = long_mask.sum()
+    df = df[~long_mask].reset_index(drop=True)
+    report["dropped"]["too_long_text"] = int(long_count)
+    if long_count > 0:
+        logger.info("Dropped %d rows with text longer than %d words (Outliers).",
+                    long_count, max_words)
 
     # --- Normalise labels ---
     df["label"] = df["label_raw"].apply(lambda x: str(x).strip())

@@ -152,7 +152,7 @@ def main() -> None:
             all_valid = False
 
     if all_valid:
-        logger.info("✓ All split files pass schema validation.")
+        logger.info("All split files pass schema validation.")
     else:
         sys.exit(1)
 

@@ -32,18 +32,9 @@
     "bertweet": {
       "type": "Transformer",
       "pretrained": "vinai/bertweet-base",
-      "epochs_trained": 20,
-      "test_accuracy": 0.7571,
-      "test_macro_f1": 0.7518
-    },
-    "gemini": {
-      "type": "LLM (zero-shot)",
-      "model": "gemini-2.5-flash",
-      "temperature": 0.0,
-      "sample_size": 200,
-      "test_accuracy": 0.66,
-      "test_macro_f1": 0.6175,
-      "api_cost_usd": 0.009019
+      "epochs_trained": 50,
+      "test_accuracy": 0.821,
+      "test_macro_f1": 0.8268
     }
   },
   "semantic": {

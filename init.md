@@ -1,6 +1,6 @@
 # Chi tiết Đề tài #1
 
-## 🎯 "Mental Health Sentiment Analysis: Comparing RNN vs Transformer vs LLM"
+## "Mental Health Sentiment Analysis: Comparing RNN vs Transformer vs LLM"
 
 ---
 

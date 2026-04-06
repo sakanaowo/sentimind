@@ -18,7 +18,7 @@ model:
 training:
   batch_size: 16
   gradient_accumulation_steps: 2 # effective batch = 32
-  epochs: 20
+  epochs: 50
   learning_rate: 5.0e-5
   weight_decay: 1.0e-2
   warmup_ratio: 0.1 # fraction of total steps used for linear warmup

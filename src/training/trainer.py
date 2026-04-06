@@ -206,7 +206,7 @@ def train(
             (es_mode == "min" and monitor_val < early_stopper.best)
         ):
             torch.save(model.state_dict(), checkpoint_path)
-            logger.info("  ✓ New best checkpoint saved (epoch %d, %s=%.4f).",
+            logger.info("  New best checkpoint saved (epoch %d, %s=%.4f).",
                         epoch, early_stopping_metric, monitor_val)
 
         if early_stopper(monitor_val, epoch):

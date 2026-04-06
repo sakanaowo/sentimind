@@ -44,7 +44,6 @@ clustering:
 comparison:
   bilstm_metrics: data/artifacts/bilstm_metrics.json
   bertweet_metrics: data/artifacts/bertweet_metrics.json # null if not yet generated
-  llm_metrics: data/artifacts/llm_metrics.json # null if not yet generated
 
 output:
   artifacts_dir: data/artifacts

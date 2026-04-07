@@ -59,6 +59,7 @@ class BERTweetClassifier(nn.Module):
             logger.info("Base encoder frozen; only classifier head will be trained.")
 
     def forward(
+
         self,
         input_ids: torch.Tensor,
         attention_mask: torch.Tensor,
